@@ -120,10 +120,10 @@ def make_multi_cell_statistics(data_dir, output_data_dir):
     cell_statistics = pd.DataFrame(cell_statistics_dict, index=multi_input_index)
     normalized_cell_statistics = cell_statistics.apply(lambda x: (x - x.mean()) / x.std(), axis=0)
 
-    out_filename = os.path.join(data_dir, "multi_cell_statistics.parquet")
+    out_filename = os.path.join(output_data_dir, "multi_cell_statistics.parquet")
     cell_statistics.to_parquet(out_filename)
 
-    out_filename = os.path.join(data_dir, "normalized_multi_cell_statistics.parquet")
+    out_filename = os.path.join(output_data_dir, "normalized_multi_cell_statistics.parquet")
     normalized_cell_statistics.to_parquet(out_filename)
 
 
