@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy
 import scipy.sparse
+from tqdm import tqdm
 from sklearn.decomposition import TruncatedSVD
 
 from ss_opm.utility.get_group_id import get_group_id
@@ -12,6 +13,7 @@ from ss_opm.utility.nonzero_median_normalize import median_normalize
 
 
 def make_cite_cell_statistics(data_dir, output_data_dir):
+    print("make_cite_cell_statistics")
     cite_train_values = scipy.sparse.load_npz(os.path.join(data_dir, "train_cite_inputs_values.sparse.npz"))
     cite_train_input_index = np.load(os.path.join(data_dir, "train_cite_inputs_idxcol.npz"), allow_pickle=True)["index"]
     cite_test_values = scipy.sparse.load_npz(os.path.join(data_dir, "test_cite_inputs_values.sparse.npz"))
@@ -26,7 +28,7 @@ def make_cite_cell_statistics(data_dir, output_data_dir):
     means = np.empty(cite_input_index.shape[0], dtype=float)
     stds = np.empty(cite_input_index.shape[0], dtype=float)
 
-    for i in range(len(cite_input_index)):
+    for i in tqdm(range(len(cite_input_index))):
         row_nonzero_values = cite_values.data[cite_values.indptr[i] : cite_values.indptr[i + 1]]
         nonzero_ratios[i] = len(row_nonzero_values) / cite_values.shape[1]
         q_values = np.quantile(row_nonzero_values, q=[0.25, 0.5, 0.75])
@@ -59,6 +61,7 @@ def make_cite_cell_statistics(data_dir, output_data_dir):
 
 
 def make_multi_cell_statistics(data_dir, output_data_dir):
+    print("make_multi_cell_statistics")
     multi_train_values = scipy.sparse.load_npz(os.path.join(data_dir, "train_multi_inputs_values.sparse.npz"))
     multi_train_input_index_column = np.load(os.path.join(data_dir, "train_multi_inputs_idxcol.npz"), allow_pickle=True)
     multi_train_input_index = multi_train_input_index_column["index"]
@@ -89,7 +92,7 @@ def make_multi_cell_statistics(data_dir, output_data_dir):
     for ch_name in ch_masks.keys():
         ch_stats["ch_nonzero_ratio_" + ch_name] = np.empty(multi_input_index.shape[0], dtype=float)
 
-    for i in range(len(multi_input_index)):
+    for i in tqdm(range(len(multi_input_index))):
         row_nonzero_values = multi_values.data[multi_values.indptr[i] : multi_values.indptr[i + 1]]
         nonzero_ratios[i] = np.log1p(len(row_nonzero_values) / multi_values.shape[1])
         q_values = np.quantile(row_nonzero_values, q=[0.25, 0.5, 0.75])
@@ -128,6 +131,7 @@ def make_multi_cell_statistics(data_dir, output_data_dir):
 
 
 def make_multi_batch_statistics(metadata, output_data_dir):
+    print("make_multi_batch_statistics")
     metadata = metadata[metadata["technology"] == "multiome"]
     unique_group_ids = metadata["group"].unique()
 
@@ -159,6 +163,7 @@ def make_multi_batch_statistics(metadata, output_data_dir):
 
 
 def make_cite_batch_statistics(metadata, output_data_dir):
+    print("make_cite_batch_statistics")
     metadata = metadata[metadata["technology"] == "citeseq"]
     unique_group_ids = metadata["group"].unique()
 
@@ -192,6 +197,7 @@ def make_cite_batch_statistics(metadata, output_data_dir):
 
 
 def make_cite_batch_inputs_median(data_dir, metadata, output_data_dir):
+    print("make_cite_batch_inputs_median")
     train_values = scipy.sparse.load_npz(os.path.join(data_dir, "train_cite_inputs_values.sparse.npz")).toarray()
     test_values = scipy.sparse.load_npz(os.path.join(data_dir, "test_cite_inputs_values.sparse.npz")).toarray()
 
@@ -208,7 +214,7 @@ def make_cite_batch_inputs_median(data_dir, metadata, output_data_dir):
 
     median_norm_values_batch = []
 
-    for group_id in unique_group_ids:
+    for group_id in tqdm(unique_group_ids):
         selected_index = metadata["group"] == group_id
         selected_values = median_norm_values[selected_index, :].copy()
         selected_values[selected_values == 0.0] = np.nan
