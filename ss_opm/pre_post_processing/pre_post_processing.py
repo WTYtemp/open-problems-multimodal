@@ -89,6 +89,7 @@ class PrePostProcessing(object):
             assert len(metadata) == transformed_inputs_values.shape[0]
             print("use test_inputs_values. total size:", transformed_inputs_values.shape[0])
         transformed_targets_values = targets_values
+        del inputs_values, targets_values, metadata, test_inputs_values, test_metadata
         if isinstance(transformed_targets_values, scipy.sparse.csr_matrix):
             transformed_targets_values = transformed_targets_values.toarray()
         if transformed_targets_values is not None:
