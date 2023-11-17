@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 import scipy.sparse
 import sklearn
 from sklearn.decomposition import PCA, TruncatedSVD
