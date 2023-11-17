@@ -89,7 +89,7 @@ class PrePostProcessing(object):
             assert len(metadata) == transformed_inputs_values.shape[0]
             print("use test_inputs_values. total size:", transformed_inputs_values.shape[0])
         transformed_targets_values = targets_values
-        del inputs_values, targets_values, metadata, test_inputs_values, test_metadata
+        del inputs_values, metadata, test_inputs_values, test_metadata
         if isinstance(transformed_targets_values, scipy.sparse.csr_matrix):
             transformed_targets_values = transformed_targets_values.toarray()
         if transformed_targets_values is not None:
@@ -127,7 +127,7 @@ class PrePostProcessing(object):
                 if fitting:
                     unique_group_ids = targets_metadata["group"].unique()
                     targets_batch_medians = {}
-                    for group_id in unique_group_ids:
+                    for group_id in tqdm(unique_group_ids):
                         s_group = targets_metadata["group"] == group_id
                         transformed_targets_values_batch = transformed_targets_values[s_group]
                         tmp = transformed_targets_values_batch.copy()
