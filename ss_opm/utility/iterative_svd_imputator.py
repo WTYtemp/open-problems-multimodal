@@ -18,6 +18,7 @@ class IterativeSVDImputator(object):
     def fit(self, X):
         mask = X == self.missing_values
         transformed_X = X.copy()
+        del X
         for i in range(self.iters):
             self.svd_decomposers[i] = TruncatedSVD(**self.svd_params)
             self.svd_decomposers[i].fit(transformed_X)
@@ -27,6 +28,7 @@ class IterativeSVDImputator(object):
     def transform(self, X):
         mask = X == self.missing_values
         transformed_X = X.copy()
+        del X
         for i in range(self.iters):
             new_X = self.svd_decomposers[i].inverse_transform(self.svd_decomposers[i].transform(transformed_X))
             transformed_X[mask] = new_X[mask]
