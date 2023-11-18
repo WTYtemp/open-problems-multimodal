@@ -177,11 +177,13 @@ class PrePostProcessing(object):
         elif self.params["task_type"] == "cite":
             print('--- 1')
             transformed_inputs = transformed_inputs_values.toarray()
+            del transformed_inputs_values
             print('--- 2')
             transformed_inputs_values = np.expm1(transformed_inputs)
             del transformed_inputs
             print('--- 3')
             transformed_inputs = median_normalize(transformed_inputs_values)
+            del transformed_inputs_values
             print('--- 4')
             transformed_inputs_values = np.log1p(transformed_inputs)
             del transformed_inputs
