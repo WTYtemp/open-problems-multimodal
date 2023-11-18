@@ -177,16 +177,12 @@ class PrePostProcessing(object):
         elif self.params["task_type"] == "cite":
             print('--- 1')
             transformed_inputs_values = transformed_inputs_values.toarray()
-            # del transformed_inputs_values
             print('--- 2')
             transformed_inputs_values = np.expm1(transformed_inputs_values)
-            # del transformed_inputs
             print('--- 3')
             transformed_inputs_values = median_normalize(transformed_inputs_values)
-            # del transformed_inputs_values
             print('--- 4')
             transformed_inputs_values = np.log1p(transformed_inputs_values)
-            # del transformed_inputs
             if fitting:
                 print('--- mask citeseq input values')
                 inputs_targets_pair = np.load(
@@ -196,6 +192,7 @@ class PrePostProcessing(object):
                 inputs_mask |= np.load(os.path.join(self.params["data_dir"], "cite_inputs_mask2.npz"), allow_pickle=True)["mask"]
                 assert inputs_mask.shape[0] == transformed_inputs_values.shape[1]
                 self.preprocesses["inputs_mask"] = inputs_mask
+                del inputs_targets_pair, inputs_mask
             selected_transformed_inputs_values = transformed_inputs_values[:, self.preprocesses["inputs_mask"]]
             if fitting:
                 print('--- fitting citeseq input imputator')
