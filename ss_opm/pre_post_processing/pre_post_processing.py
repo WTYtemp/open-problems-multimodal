@@ -184,6 +184,7 @@ class PrePostProcessing(object):
             transformed_inputs = median_normalize(transformed_inputs_values)
             print('--- 4')
             transformed_inputs_values = np.log1p(transformed_inputs)
+            del transformed_inputs
             if fitting:
                 print('--- mask citeseq input values')
                 inputs_targets_pair = np.load(
