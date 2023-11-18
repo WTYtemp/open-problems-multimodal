@@ -9,6 +9,7 @@ def median_normalize(values, ignore_zero=True, log=False):
     if ignore_zero:
         tmp_values[tmp_values == 0] = np.nan
     nonzaero_median = np.nanquantile(tmp_values, q=0.5, axis=1).astype(values.dtype)
+    del tmp_values
     # print("nonzaero_median", nonzaero_median)
     if log:
         ret = values - nonzaero_median[:, None]
