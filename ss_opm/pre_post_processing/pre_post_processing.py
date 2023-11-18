@@ -91,6 +91,7 @@ class PrePostProcessing(object):
             print("use test_inputs_values. total size:", transformed_inputs_values.shape[0])
         transformed_targets_values = targets_values
         del inputs_values, metadata, test_inputs_values, test_metadata
+        
         if isinstance(transformed_targets_values, scipy.sparse.csr_matrix):
             transformed_targets_values = transformed_targets_values.toarray()
         if transformed_targets_values is not None:
@@ -126,14 +127,17 @@ class PrePostProcessing(object):
                 if self.params["use_targets_normalization"]:
                     transformed_targets_values = row_normalize(transformed_targets_values)
                 if fitting:
+                    print('---- fitting citeseq target values')
                     unique_group_ids = targets_metadata["group"].unique()
                     targets_batch_medians = {}
-                    for group_id in tqdm(unique_group_ids):
+                    for group_id in unique_group_ids:
                         s_group = targets_metadata["group"] == group_id
                         transformed_targets_values_batch = transformed_targets_values[s_group]
                         tmp = transformed_targets_values_batch.copy()
                         targets_batch_median = np.median(tmp, axis=0)
                         targets_batch_medians[group_id] = targets_batch_median
+                        del tmp
+                        
                     self.preprocesses["targets_batch_medians"] = targets_batch_medians
                     targets_batch_medians_list = []
                     for group_id in unique_group_ids:
@@ -157,10 +161,12 @@ class PrePostProcessing(object):
                     self.preprocesses["targets_decomposer"] = targets_decomposer_class(
                         **targets_decomposer_params,
                     )
+                    print('--- fitting targets decomposer')
                     self.preprocesses["targets_decomposer"].fit(transformed_targets_values)
                 transformed_targets_values = self.preprocesses["targets_decomposer"].transform(transformed_targets_values)
             if self.params["use_targets_scaler"]:
                 self.preprocesses["targets_scaler"] = sklearn.preprocessing.StandardScaler()
+                print('--- fitting targets scaler')
                 self.preprocesses["targets_scaler"].fit(transformed_targets_values)
                 transformed_targets_values = self.preprocesses["targets_scaler"].transform(transformed_targets_values)
 
@@ -168,8 +174,12 @@ class PrePostProcessing(object):
         if self.params["task_type"] == "multi":
             transformed_inputs_values = row_quantile_normalize(transformed_inputs_values)
         elif self.params["task_type"] == "cite":
-            transformed_inputs_values = np.log1p(median_normalize(np.expm1(transformed_inputs_values.toarray())))
+            transformed_inputs_values = transformed_inputs_values.toarray()
+            transformed_inputs_values = np.expm1(transformed_inputs_values)
+            transformed_inputs_values = median_normalize(transformed_inputs_values)
+            transformed_inputs_values = np.log1p(transformed_inputs_values)
             if fitting:
+                print('--- mask citeseq input values')
                 inputs_targets_pair = np.load(
                     os.path.join(self.params["data_dir"], "cite_inputs_targets_pair3g.npz"), allow_pickle=True
                 )["mask"]
@@ -179,6 +189,7 @@ class PrePostProcessing(object):
                 self.preprocesses["inputs_mask"] = inputs_mask
             selected_transformed_inputs_values = transformed_inputs_values[:, self.preprocesses["inputs_mask"]]
             if fitting:
+                print('--- fitting citeseq input imputator')
                 self.preprocesses["inputs_imputator"] = IterativeSVDImputator(iters=1)
                 self.preprocesses["inputs_imputator"].fit(transformed_inputs_values)
             transformed_inputs_values = self.preprocesses["inputs_imputator"].transform(transformed_inputs_values)
@@ -188,6 +199,7 @@ class PrePostProcessing(object):
             transformed_inputs_values = transformed_inputs_values - self.preprocesses["inputs_medians"]
         else:
             raise RuntimeError
+        
         inputs_decomposer_class = _get_decomposer_method(self.params["inputs_decomposer_method"])
         if inputs_decomposer_class is not None:
             binary_transformed_inputs_values = transformed_inputs_values > 0
@@ -205,6 +217,7 @@ class PrePostProcessing(object):
                 self.preprocesses["inputs_decomposer"] = inputs_decomposer_class(
                     **inputs_decomposer_params,
                 )
+                print('--- fitting input values decomposer')
                 self.preprocesses["inputs_decomposer"].fit(transformed_inputs_values)
             transformed_inputs_values = self.preprocesses["inputs_decomposer"].transform(transformed_inputs_values)
             if self.params["task_type"] == "multi":
@@ -214,8 +227,10 @@ class PrePostProcessing(object):
                 transformed_inputs_values = np.hstack((transformed_inputs_values, binary_transformed_inputs_values))
             elif self.params["task_type"] == "cite":
                 transformed_inputs_values = np.hstack((transformed_inputs_values, selected_transformed_inputs_values))
+                del selected_transformed_inputs_values
         if self.params["use_inputs_scaler"]:
             if fitting:
+                print('--- fitting inputs scaler')
                 self.preprocesses["inputs_scaler"] = sklearn.preprocessing.StandardScaler()
                 self.preprocesses["inputs_scaler"].fit(transformed_inputs_values)
             transformed_inputs_values = self.preprocesses["inputs_scaler"].transform(transformed_inputs_values)
