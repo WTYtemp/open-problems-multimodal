@@ -175,18 +175,19 @@ class PrePostProcessing(object):
         if self.params["task_type"] == "multi":
             transformed_inputs_values = row_quantile_normalize(transformed_inputs_values)
         elif self.params["task_type"] == "cite":
-            print('--- 1')
-            transformed_inputs = transformed_inputs_values.toarray()
-            del transformed_inputs_values
-            print('--- 2')
-            transformed_inputs_values = np.expm1(transformed_inputs)
-            del transformed_inputs
-            print('--- 3')
-            transformed_inputs = median_normalize(transformed_inputs_values)
-            del transformed_inputs_values
-            print('--- 4')
-            transformed_inputs_values = np.log1p(transformed_inputs)
-            del transformed_inputs
+            transformed_inputs_values = np.log1p(median_normalize(np.expm1(transformed_inputs_values.toarray())))
+            # print('--- 1')
+            # transformed_inputs = transformed_inputs_values.toarray()
+            # del transformed_inputs_values
+            # print('--- 2')
+            # transformed_inputs_values = np.expm1(transformed_inputs)
+            # del transformed_inputs
+            # print('--- 3')
+            # transformed_inputs = median_normalize(transformed_inputs_values)
+            # del transformed_inputs_values
+            # print('--- 4')
+            # transformed_inputs_values = np.log1p(transformed_inputs)
+            # del transformed_inputs
             if fitting:
                 print('--- mask citeseq input values')
                 inputs_targets_pair = np.load(
@@ -201,10 +202,12 @@ class PrePostProcessing(object):
                 print('--- fitting citeseq input imputator')
                 self.preprocesses["inputs_imputator"] = IterativeSVDImputator(iters=1)
                 self.preprocesses["inputs_imputator"].fit(transformed_inputs_values)
+            print('--- transform citeseq input imputator')
             transformed_inputs_values = self.preprocesses["inputs_imputator"].transform(transformed_inputs_values)
             if fitting:
                 self.preprocesses["inputs_medians"] = np.median(transformed_inputs_values, axis=0)
                 assert self.preprocesses["inputs_medians"].shape[0] == transformed_inputs_values.shape[1]
+            print('--- minus input median')
             transformed_inputs_values = transformed_inputs_values - self.preprocesses["inputs_medians"]
         else:
             raise RuntimeError
