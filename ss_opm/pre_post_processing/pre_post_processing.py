@@ -175,18 +175,17 @@ class PrePostProcessing(object):
         if self.params["task_type"] == "multi":
             transformed_inputs_values = row_quantile_normalize(transformed_inputs_values)
         elif self.params["task_type"] == "cite":
-            transformed_inputs_values = np.log1p(median_normalize(np.expm1(transformed_inputs_values.toarray())))
-            # print('--- 1')
-            # transformed_inputs = transformed_inputs_values.toarray()
+            print('--- 1')
+            transformed_inputs_values = transformed_inputs_values.toarray()
             # del transformed_inputs_values
-            # print('--- 2')
-            # transformed_inputs_values = np.expm1(transformed_inputs)
+            print('--- 2')
+            transformed_inputs_values = np.expm1(transformed_inputs_values)
             # del transformed_inputs
-            # print('--- 3')
-            # transformed_inputs = median_normalize(transformed_inputs_values)
+            print('--- 3')
+            transformed_inputs_values = median_normalize(transformed_inputs_values)
             # del transformed_inputs_values
-            # print('--- 4')
-            # transformed_inputs_values = np.log1p(transformed_inputs)
+            print('--- 4')
+            transformed_inputs_values = np.log1p(transformed_inputs_values)
             # del transformed_inputs
             if fitting:
                 print('--- mask citeseq input values')
