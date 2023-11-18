@@ -163,7 +163,6 @@ class PrePostProcessing(object):
                     )
                     print('--- fitting targets decomposer')
                     self.preprocesses["targets_decomposer"].fit(transformed_targets_values)
-                print('--- transform targets decomposer')
                 transformed_targets_values = self.preprocesses["targets_decomposer"].transform(transformed_targets_values)
             if self.params["use_targets_scaler"]:
                 self.preprocesses["targets_scaler"] = sklearn.preprocessing.StandardScaler()
@@ -176,9 +175,13 @@ class PrePostProcessing(object):
         if self.params["task_type"] == "multi":
             transformed_inputs_values = row_quantile_normalize(transformed_inputs_values)
         elif self.params["task_type"] == "cite":
+            print('--- 1')
             transformed_inputs_values = transformed_inputs_values.toarray()
+            print('--- 2')
             transformed_inputs_values = np.expm1(transformed_inputs_values)
+            print('--- 3')
             transformed_inputs_values = median_normalize(transformed_inputs_values)
+            print('--- 4')
             transformed_inputs_values = np.log1p(transformed_inputs_values)
             if fitting:
                 print('--- mask citeseq input values')
