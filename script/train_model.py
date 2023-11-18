@@ -376,6 +376,8 @@ def main():
         if pre_post_process_tuning:
             pre_post_process_params = pre_post_process_class.get_params(
                 task_type=args.task_type,
+                data_dir=args.data_dir,
+                device=args.device,
                 trial=trial,
                 debug=args.debug,
                 seed=args.seed,
@@ -384,6 +386,7 @@ def main():
             pre_post_process_params = pre_post_process_class.get_params(
                 task_type=args.task_type,
                 data_dir=args.data_dir,
+                device=args.device,
                 trial=None,
                 debug=args.debug,
                 seed=args.seed,
